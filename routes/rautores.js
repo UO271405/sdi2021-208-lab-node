@@ -28,6 +28,31 @@ module.exports = function(app, swig) {
         res.send(respuesta);
     });
 
+    app.get("/autores/filtrar/:rol", function (req, res) {
+        let respuesta = "Autores con rol de " + req.params.rol + ": ";
+
+        let autores = [ {
+            "nombre" : "Freddy Mercury",
+            "grupo" : "Queen",
+            "rol" : "Cantante"
+        }, {
+            "nombre" : "Kase o",
+            "grupo" : "Violadores del verso",
+            "rol" : "Cantante"
+        }, {
+            "nombre" : "Angus Young",
+            "grupo" : "ACDC",
+            "rol" : "Guitarrista"
+        } ];
+
+        for(let i=0; i<autores.length; i++){
+            if(autores[i].rol.toLowerCase() === req.params.rol.toLowerCase()){
+                respuesta += autores[i].nombre + " - ";
+            }
+        }
+        res.send(respuesta);
+    })
+
     app.post("/autor", function (req, res) {
         let respuesta = "";
         if(Object.keys(req.body.nombre).length === 0)
@@ -40,6 +65,7 @@ module.exports = function(app, swig) {
             respuesta = "Autor: " + req.body.nombre + "<br>Grupo: " + req.body.grupo + "<br>Rol: " + req.body.rol;
         res.send(respuesta);
     })
+
 
     app.get('/autores/*', function (req, res) {
         res.redirect('/autores');
