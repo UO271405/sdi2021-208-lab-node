@@ -23,15 +23,24 @@ module.exports = function (app, swig, gestorBD) {
     });
 
     app.get('/canciones/agregar', function (req, res) {
+        if (req.session.usuario == null) {
+            res.redirect("/tienda");
+            return;
+        }
         let respuesta = swig.renderFile('views/bagregar.html', {});
         res.send(respuesta);
     })
 
     app.post("/cancion", function (req, res) {
+        if (req.session.usuario == null) {
+            res.redirect("/tienda");
+            return;
+        }
         let cancion = {
             nombre: req.body.nombre,
             genero: req.body.genero,
-            precio: req.body.precio
+            precio: req.body.precio,
+            autor: req.session.usuario
         }
         // Conectarse
         gestorBD.insertarCancion(cancion, function (id) {
@@ -97,14 +106,14 @@ module.exports = function (app, swig, gestorBD) {
     });
 
     app.get('/cancion/:id', function (req, res) {
-        let criterio = { "_id" : gestorBD.mongo.ObjectID(req.params.id) };
-        gestorBD.obtenerCanciones(criterio,function(canciones){
-            if ( canciones == null ){
+        let criterio = {"_id": gestorBD.mongo.ObjectID(req.params.id)};
+        gestorBD.obtenerCanciones(criterio, function (canciones) {
+            if (canciones == null) {
                 res.send("Error al recuperar la canción.");
             } else {
                 let respuesta = swig.renderFile('views/bcancion.html',
                     {
-                        cancion : canciones[0]
+                        cancion: canciones[0]
                     });
                 res.send(respuesta);
             }
