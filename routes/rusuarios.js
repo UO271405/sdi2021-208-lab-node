@@ -51,5 +51,20 @@ module.exports = function (app, swig, gestorBD) {
     app.get('/desconectarse', function (req, res) {
         req.session.usuario = null;
         res.send("Usuario desconectado");
-    })
+    });
+
+    app.get("/publicaciones", function(req, res) {
+        let criterio = { autor : req.session.usuario };
+        gestorBD.obtenerCanciones(criterio, function(canciones) {
+            if (canciones == null) {
+                res.send("Error al listar ");
+            } else {
+                let respuesta = swig.renderFile('views/bpublicaciones.html',
+                    {
+                        canciones : canciones
+                    });
+                res.send(respuesta);
+            }
+        });
+    });
 };

@@ -23,19 +23,11 @@ module.exports = function (app, swig, gestorBD) {
     });
 
     app.get('/canciones/agregar', function (req, res) {
-        if (req.session.usuario == null) {
-            res.redirect("/tienda");
-            return;
-        }
         let respuesta = swig.renderFile('views/bagregar.html', {});
         res.send(respuesta);
-    })
+    });
 
     app.post("/cancion", function (req, res) {
-        if (req.session.usuario == null) {
-            res.redirect("/tienda");
-            return;
-        }
         let cancion = {
             nombre: req.body.nombre,
             genero: req.body.genero,
@@ -70,7 +62,7 @@ module.exports = function (app, swig, gestorBD) {
                 }
             }
         });
-    })
+    });
 
     app.get('/canciones/:id', function (req, res) {
         let respuesta = 'id: ' + req.params.id;
@@ -119,4 +111,72 @@ module.exports = function (app, swig, gestorBD) {
             }
         });
     });
+
+    app.get('/cancion/modificar/:id', function (req, res) {
+        let criterio = { "_id" : gestorBD.mongo.ObjectID(req.params.id) };
+        gestorBD.obtenerCanciones(criterio,function(canciones){
+            if ( canciones == null ){
+                res.send(respuesta);
+            } else {
+                let respuesta = swig.renderFile('views/bcancionModificar.html',
+                    {
+                        cancion : canciones[0]
+                    });
+                res.send(respuesta);
+            }
+        });
+    })
+
+    app.post('/cancion/modificar/:id', function (req, res) {
+        let id = req.params.id;
+        let criterio = {"_id": gestorBD.mongo.ObjectID(id)};
+        let cancion = {
+            nombre: req.body.nombre,
+            genero: req.body.genero,
+            precio: req.body.precio
+        }
+        gestorBD.modificarCancion(criterio, cancion, function (result) {
+            if (result == null) {
+                res.send("Error al modificar ");
+            } else {
+                paso1ModificarPortada(req.files, id, function (result) {
+                    if (result == null) {
+                        res.send("Error en la modificación");
+                    } else {
+                        res.send("Modificado");
+                    }
+                });
+            }
+        });
+    });
+
+    function paso1ModificarPortada(files, id, callback) {
+        if (files && files.portada != null) {
+            let imagen = files.portada;
+            imagen.mv('public/portadas/' + id + '.png', function (err) {
+                if (err) {
+                    callback(null); // ERROR
+                } else {
+                    paso2ModificarAudio(files, id, callback); // SIGUIENTE
+                }
+            });
+        } else {
+            paso2ModificarAudio(files, id, callback); // SIGUIENTE
+        }
+    };
+
+    function paso2ModificarAudio(files, id, callback) {
+        if (files && files.audio != null) {
+            let audio = files.audio;
+            audio.mv('public/audios/' + id + '.mp3', function (err) {
+                if (err) {
+                    callback(null); // ERROR
+                } else {
+                    callback(true); // FIN
+                }
+            });
+        } else {
+            callback(true); // FIN
+        }
+    };
 };
