@@ -21,8 +21,8 @@
 <table class="table table-hover">
     <thead>
     <tr>
-        <th>Texto</th>
-        <th>Usuario</th>
+        <th>Comentario</th>
+        <th>Autor</th>
         <th class="col-md-1"></th>
     </tr>
     </thead>
@@ -31,6 +31,9 @@
     <tr>
         <td>{{ comentario.texto }}</td>
         <td>{{ comentario.autor }}</td>
+        <td>
+            <a href="/comentario/borrar/{{ comentario._id.toString() }}">Borrar</a> <br>
+        </td>
     </tr>
     {% endfor %}
     </tbody>
