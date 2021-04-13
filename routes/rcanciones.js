@@ -79,6 +79,17 @@ module.exports = function (app, swig, gestorBD) {
         res.send('Respuesta patrón promo* ');
     });
 
+    app.get('/cancion/eliminar/:id', function (req, res) {
+        let criterio = {"_id" : gestorBD.mongo.ObjectID(req.params.id) };
+        gestorBD.eliminarCancion(criterio,function(canciones){
+            if ( canciones == null ){
+                res.send(respuesta);
+            } else {
+                res.redirect("/publicaciones");
+            }
+        });
+    });
+
     app.get("/tienda", function (req, res) {
         let criterio = {};
         if (req.query.busqueda != null) {
@@ -133,7 +144,7 @@ module.exports = function (app, swig, gestorBD) {
                 res.send(respuesta);
             }
         });
-    })
+    });
 
     app.post('/cancion/modificar/:id', function (req, res) {
         let id = req.params.id;
@@ -187,4 +198,6 @@ module.exports = function (app, swig, gestorBD) {
             callback(true); // FIN
         }
     };
+
+
 };
