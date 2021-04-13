@@ -18,10 +18,10 @@ module.exports = function (app, swig, gestorBD) {
 
         gestorBD.insertarUsuario(usuario, function (id) {
             if (id == null) {
-                res.send("Error al insertar el usuario");
+                res.redirect("/registrarse?mensaje=Error al registrar usuario");
             } else {
                 //res.send('Usuario Insertado ' + id);
-                res.redirect("/publicaciones");
+                res.redirect("/identificarse?mensaje=Nuevo usuario registrado");
             }
         });
     });
@@ -41,7 +41,7 @@ module.exports = function (app, swig, gestorBD) {
         gestorBD.obtenerUsuarios(criterio, function (usuarios) {
             if (usuarios == null || usuarios.length == 0) {
                 req.session.usuario = null;
-                res.send("No identificado: ");
+                res.redirect("/identificarse" + "?mensaje=Email o password incorrecto" + "&tipoMensaje=alert-danger ");
             } else {
                 req.session.usuario = usuarios[0].email;
                 //res.send("identificado");
@@ -55,15 +55,15 @@ module.exports = function (app, swig, gestorBD) {
         res.send("Usuario desconectado");
     });
 
-    app.get("/publicaciones", function(req, res) {
-        let criterio = { autor : req.session.usuario };
-        gestorBD.obtenerCanciones(criterio, function(canciones) {
+    app.get("/publicaciones", function (req, res) {
+        let criterio = {autor: req.session.usuario};
+        gestorBD.obtenerCanciones(criterio, function (canciones) {
             if (canciones == null) {
                 res.send("Error al listar ");
             } else {
                 let respuesta = swig.renderFile('views/bpublicaciones.html',
                     {
-                        canciones : canciones
+                        canciones: canciones
                     });
                 res.send(respuesta);
             }
