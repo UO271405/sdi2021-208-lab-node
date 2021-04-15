@@ -127,25 +127,33 @@ module.exports = function (app, swig, gestorBD) {
         });
     });
 
+    // Pasar un parametro para ver si puedo o no mostrar la cancion
+    // Si la cancion es tuya te lleva a detalles pudiendo reproducirla, sin el comprar
+    // Si intentas comprarla mediante inyeccion te debe de mostrar un "Error al comprar la cancion, ya la compraste"
     app.get('/cancion/:id', function (req, res) {
         let criterio = {"_id": gestorBD.mongo.ObjectID(req.params.id)};
         gestorBD.obtenerCanciones(criterio, function (canciones) {
             if (canciones == null) {
                 res.send("Error al recuperar la canción.");
             } else {
-                let criterioComentario = {"cancion_id": gestorBD.mongo.ObjectID(req.params.id)};
-                gestorBD.obtenerComentarios(criterioComentario, function (comentarios) {
-                    if (comentarios == null) {
-                        res.send(respuesta);
-                    } else {
-                        let respuesta = swig.renderFile('views/bcancion.html',
-                            {
-                                cancion: canciones[0],
-                                comentarios: comentarios
-                            });
-                        res.send(respuesta);
-                    }
-                })
+                idCancion = gestorBD.mongo.ObjectID(req.params.id);
+                usuario = req.session.usuario;
+                puedeComprarCancion(idCancion, usuario, function (comprar) {
+                    let criterioComentario = {"cancion_id": gestorBD.mongo.ObjectID(req.params.id)};
+                    gestorBD.obtenerComentarios(criterioComentario, function (comentarios) {
+                        if (comentarios == null) {
+                            res.send(respuesta);
+                        } else {
+                            let respuesta = swig.renderFile('views/bcancion.html',
+                                {
+                                    cancion: canciones[0],
+                                    comentarios: comentarios,
+                                    puedeComprar: comprar   //Para mostar la opcion a compra o el audio
+                                });
+                            res.send(respuesta);
+                        }
+                    });
+                });
             }
         });
     });
@@ -219,20 +227,55 @@ module.exports = function (app, swig, gestorBD) {
         }
     };
 
+    // Primero compruebas si la puedes comprar
+    // Si no la puedes comprar devuelves un error
     app.get('/cancion/comprar/:id', function (req, res) {
         let cancionId = gestorBD.mongo.ObjectID(req.params.id);
-        let compra = {
-            usuario: req.session.usuario,
-            cancionId: cancionId
-        }
-        gestorBD.insertarCompra(compra, function (idCompra) {
-            if (idCompra == null) {
-                res.send(respuesta);
+        let usuario = req.session.usuario;
+
+        // Ejercicio 1 complementarios Session 9
+        puedeComprarCancion(cancionId, usuario, function (comprar) {
+            if (comprar) {
+                let compra = {
+                    usuario: req.session.usuario,
+                    cancionId: cancionId
+                }
+                gestorBD.insertarCompra(compra, function (idCompra) {
+                    if (idCompra == null) {
+                        res.send(respuesta);
+                    } else {
+                        res.redirect("/compras");
+                    }
+                });
             } else {
-                res.redirect("/compras");
+                res.send("Ya eres el autor o ya has comprado la canción");
             }
         });
     });
+
+
+    //Si no soy el autor y no la he comprado mostrar enlace
+    function puedeComprarCancion(idCancion, idUsuario, funcionCallback) {
+        let criterio_cancion_autor = {$and: [{"_id": idCancion}, {"autor": idUsuario}]};
+        let criterio_esta_comprada = {$and: [{"cancionId": idCancion}, {"usuario": idUsuario}]};
+        // Verifico si soy el autor
+        gestorBD.obtenerCanciones(criterio_cancion_autor, function (canciones) {
+            if (canciones == null || canciones.length > 0) {
+                // Si es mia
+                funcionCallback(false);
+            } else {    // Si la cancion no es mia
+                // Compruebo si la he comprado
+                gestorBD.obtenerCompras(criterio_esta_comprada, function (compras) {
+                    if (compras == null || compras.length > 0) {
+                        //Si ya la tengo comprada
+                        funcionCallback(false);
+                    } else {
+                        funcionCallback(true);
+                    }
+                })
+            }
+        });
+    }
 
     app.get('/compras', function (req, res) {
         let criterio = {"usuario": req.session.usuario};
