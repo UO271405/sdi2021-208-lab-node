@@ -98,6 +98,7 @@ require("./routes/rusuarios.js")(app, swig, gestorBD); // (app, param1, param2, 
 require("./routes/rcanciones.js")(app, swig, gestorBD); // (app, param1, param2, etc.)
 require("./routes/rautores.js")(app, swig);
 require("./routes/rcomentarios.js")(app, swig, gestorBD);
+require("./routes/rerrores.js")(app, swig);
 
 app.get('/', function (req, res) {
     res.redirect('/tienda');

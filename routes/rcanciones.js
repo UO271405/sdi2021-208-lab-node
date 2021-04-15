@@ -37,21 +37,21 @@ module.exports = function (app, swig, gestorBD) {
         // Conectarse
         gestorBD.insertarCancion(cancion, function (id) {
             if (id == null) {
-                res.send("Error al insertar ");
+                res.redirect("/error" + "?mensaje=Error al subir la portada" + "&tipoMensaje=alert-danger");
             } else {
                 //Agregar imagen a la carpeta portada
                 if (req.files.portada != null) {
                     var imagen = req.files.portada;
                     imagen.mv('public/portadas/' + id + '.png', function (err) {
                         if (err) {
-                            res.send("Error al subir la portada");
+                            res.redirect("/error" + "?mensaje=Error al subir la portada" + "&tipoMensaje=alert-danger");
                         } else {
                             // Agregar audio a la carpeta audios
                             if (req.files.audio != null) {
                                 let audio = req.files.audio;
                                 audio.mv('public/audios/' + id + '.mp3', function (err) {
                                     if (err) {
-                                        res.send("Error al subir el audio");
+                                        res.redirect("/error" + "?mensaje=Error al subir el audio" + "&tipoMensaje=alert-danger");
                                     } else {
                                         //res.send("Agregada id: " + id);
                                         res.redirect("/publicaciones");
@@ -104,7 +104,7 @@ module.exports = function (app, swig, gestorBD) {
 
         gestorBD.obtenerCancionesPg(criterio, pg, function (canciones, total) {
             if (canciones == null) {
-                res.send("Error al listar ");
+                res.redirect("/error" + "?mensaje=Error al listar" + "&tipoMensaje=alert-danger");
             } else {
                 let ultimaPg = total / 4;
                 if (total % 4 > 0) { // Sobran decimales
@@ -134,7 +134,7 @@ module.exports = function (app, swig, gestorBD) {
         let criterio = {"_id": gestorBD.mongo.ObjectID(req.params.id)};
         gestorBD.obtenerCanciones(criterio, function (canciones) {
             if (canciones == null) {
-                res.send("Error al recuperar la canción.");
+                res.redirect("/error" + "?mensaje=Error al recuperar la canción" + "&tipoMensaje=alert-danger");
             } else {
                 idCancion = gestorBD.mongo.ObjectID(req.params.id);
                 usuario = req.session.usuario;
@@ -183,11 +183,11 @@ module.exports = function (app, swig, gestorBD) {
         }
         gestorBD.modificarCancion(criterio, cancion, function (result) {
             if (result == null) {
-                res.send("Error al modificar ");
+                res.redirect("/error" + "?mensaje=Error al modificar" + "&tipoMensaje=alert-danger");
             } else {
                 paso1ModificarPortada(req.files, id, function (result) {
                     if (result == null) {
-                        res.send("Error en la modificación");
+                        res.redirect("/error" + "?mensaje=Error en la modificación" + "&tipoMensaje=alert-danger");
                     } else {
                         //res.send("Modificado");
                         res.redirect("/publicaciones");
@@ -248,7 +248,7 @@ module.exports = function (app, swig, gestorBD) {
                     }
                 });
             } else {
-                res.send("Ya eres el autor o ya has comprado la canción");
+                res.redirect("/error" + "?mensaje=Error, ya eres el autor o ya has comprado la canción" + "&tipoMensaje=alert-danger");
             }
         });
     });
