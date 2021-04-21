@@ -16,7 +16,7 @@
             <!-- Cambiar el precio por "reproducir" si ya está comprada -->
             {% if puedeComprar %}
             <a class="btn btn-primary pull-right" href="/cancion/comprar/{{cancion._id.toString()}}">{{ cancion.precio
-                }} €</a>
+                }} € - {{ cancion.usd }} $</a>
             {% else %}
             <audio controls>
                 <source src="/audios/{{cancion._id.toString()}}.mp3" type="audio/mpeg">
