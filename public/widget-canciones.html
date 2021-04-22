@@ -1,5 +1,7 @@
 <html>
 <div id="widget-canciones">
+    <div id="div-errores"></div>
+    <div id="ul-errores"></div>
     <input type="text" class="form-control" placeholder="Filtrar por nombre" id="filtro-nombre"/>
     <button class="btn btn-primary" onclick="widgetAgregar()">Nueva Canción</button>
     <button class="btn" onclick="cargarCanciones()">Actualizar</button>
@@ -40,10 +42,10 @@
 
     function ordenarPorNombre() {
         canciones.sort(function (a, b) {
-            if(nombreDsc){
+            if (nombreDsc) {
                 if (a.nombre > b.nombre) return 1;
                 if (a.nombre < b.nombre) return -1;
-            }else {
+            } else {
                 if (a.nombre > b.nombre) return -1;
                 if (a.nombre < b.nombre) return 1;
             }
@@ -55,10 +57,10 @@
 
     function ordenarPorGenero() {
         canciones.sort(function (a, b) {
-            if(generoDsc){
+            if (generoDsc) {
                 if (a.genero > b.genero) return 1;
                 if (a.genero < b.genero) return -1;
-            }else {
+            } else {
                 if (a.genero > b.genero) return -1;
                 if (a.genero < b.genero) return 1;
             }
@@ -108,6 +110,7 @@
                 "<td>" + cancionesMostrar[i].precio + "</td>" +
                 "<td>" +
                 "<a onclick=detalles('" + cancionesMostrar[i]._id + "')>Detalles</a><br>" +
+                "<a onclick=modificar('" + cancionesMostrar[i]._id + "')>Modificar</a>" +
                 "<a onclick=eliminar('" + cancionesMostrar[i]._id + "')>Eliminar</a>" +
                 "</td>" +
                 "</tr>");
@@ -130,9 +133,25 @@
                 $("#" + _id).remove(); // eliminar el <tr> de la canción
             },
             error: function (error) {
-                $("#contenedor-principal").load("widget-login.html");
+                //$("#contenedor-principal").load("widget-login.html");
+                console.log(error);
+                $("#div-errores").remove();
+                let errores = error.responseJSON.errores;
+                if (errores != null && errores.length > 0) {
+                    $("#widget-agregar").prepend("<div id = 'div-errores' class='alert alert-danger'> <ul id = 'ul-errores'></ul></div>");
+                    for (i = 0; i < errores.length; i++) {
+                        $("#ul-errores").append("<li >" + errores[i] + "</li>");
+                    }
+                } else {
+                    $("#widget-agregar").prepend("<div id = 'div-errores' class='alert alert-danger'>Error no reconocido</div>");
+                }
             }
         });
+    }
+
+    function modificar(_id){
+        idCancionSeleccionada = _id;
+        $("#contenedor-principal").load("widget-modificar.html");
     }
 
     function detalles(_id) {

@@ -1,6 +1,8 @@
 <html>
 <div id="widget-agregar">
     <div class="form-group">
+        <div id="div-errores"></div>
+        <div id="ul-errores"></div>
         <label class="control-label col-sm-2" for="agregar-nombre">Nombre:</label>
         <div class="col-sm-10">
             <input type="text" class="form-control" name="agregar-nombre" placeholder="Nombre de mi canción"
@@ -10,7 +12,7 @@
     <div class="form-group">
         <label class="control-label col-sm-2" for="agregar-genero">Genero:</label>
         <div class="col-sm-10">
-            <input type="text" class="form-control" name="agregar-genero" placeholder="Nombre de mi canción"
+            <input type="text" class="form-control" name="agregar-genero" placeholder="Género de mi canción"
                    id="agregar-genero"/>
         </div>
     </div>
@@ -39,10 +41,21 @@
         dataType: 'json',
         headers: {"token": token},
         success: function (respuesta) {
-            console.log(respuesta); // <-- Prueba
             $("#contenedor-principal").load("widget-canciones.html");
         }, error: function (error) {
-            $("#contenedor-principal").load("widget-login.html");
+            // $("#contenedor-principal").load("widget-login.html");
+            console.log(this.data); // debug
+            console.log(error);
+            $("#div-errores").remove();
+            let errores = error.responseJSON.errores;
+            if (errores != null && errores.length>0){
+                $("#widget-agregar").prepend("<div id = 'div-errores' class='alert alert-danger'> <ul id = 'ul-errores'></ul></div>");
+                for (i = 0; i < errores.length; i++) {
+                    $("#ul-errores").append("<li >"+ errores[i] + "</li>");
+                }
+            } else {
+                $("#widget-agregar").prepend("<div id = 'div-errores' class='alert alert-danger'>Error no reconocido</div>");
+            }
         }
     });
 } </script>
